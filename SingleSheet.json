@@ -1,0 +1,46 @@
+{
+  "filename": "report1",
+  "description": "Student Math Course Report 1",
+  "headers": [{
+      "name": "Student #",     
+      "width": "20",
+      "type": "STRING"
+    },
+    {
+      "name": "Name",
+      "type": "STRING",
+      "width": "15"
+    },
+    {
+      "name": "Class",
+      "type": "STRING",
+      "width": "15"
+    },
+    {
+      "name": "Score",
+      "type": "STRING",
+      "width": "15"
+    }
+    {
+      "name": "Rank",
+      "type": "NUMBER",
+      "width": "15"
+    }
+  ],
+  "data": [
+    ["s-001", "James", "Class-A", "A+", 1],
+    ["s-002", "Robert", "Class-A", "A", 3],
+    ["s-003", "Jennifer", "Class-A", "A",4],
+    ["s-004", "Linda", "Class-B", "B",10],
+    ["s-005", "Elizabeth", "Class-B", "B+", 8],
+    ["s-006", "Susan", "Class-C", "A",5],
+    ["s-007", "Jessica", "Class-C", "A+", 2],
+    ["s-008", "Sarah", "Class-A", "B", 9],
+    ["s-009", "Thomas", "Class-A", "B-",11],
+    ["s-010", "Joseph", "Class-B", "A-", 7],
+    ["s-011", "Charles", "Class-C", "A", 6],
+    ["s-012", "Lisa", "Class-D", "B", 9]
+  ],
+  "submitter": "Mrs. York"
+}
+
