@@ -10,10 +10,8 @@ import com.antra.evaluation.reporting_system.repo.ExcelRepository;
 import com.antra.evaluation.reporting_system.service.ExcelGenerationService;
 import com.antra.evaluation.reporting_system.service.ExcelService;
 import io.swagger.annotations.ApiOperation;
-import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContextException;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +19,6 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StreamUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 
 import javax.servlet.http.HttpServletResponse;
@@ -59,29 +56,38 @@ public class ExcelGenerationController {
     }
 
 
-    @PostMapping(path = "/excel", consumes = "application/json")
+    @PostMapping(path = "/excel",
+            consumes = "application/json",
+            headers = "Accept=application/json",
+            produces = "application/json")
     @ApiOperation("Generate Excel")
-    public ResponseEntity<ExcelResponse> createExcel(@RequestBody @Validated ExcelRequest request) throws IOException, ParseException {
+    public ResponseEntity<ExcelResponse> createExcel( @RequestBody @Validated ExcelRequest request) throws IOException, ParseException {
 
         // for test
-        System.out.println("get request for create single sheet excel file");
-        System.out.println(request);
         ExcelData data = excelGenerationService.createExcelData(request, "");
-        File file = excelGenerationService.generateExcelReport(data);
-
-//        String filePath = file.getPath();
-//        String[] paths = filePath.split("/");
-//        String fileName = paths[paths.length - 1].substring(0, paths[paths.length - 1].length() - 5);
-
-        excelRepository.saveFile(excelGenerationService.createExcelFile(file, data));
+//        System.out.println("in generation : " + data.toString());
 
         ExcelResponse response = new ExcelResponse();
-        response.setFileId(file.getPath());
+        try {
+            File file = excelGenerationService.generateExcelReport(data);
+            excelRepository.saveFile(excelGenerationService.createExcelFile(file, data));
+
+//            response.setFileId(file.getPath());
+            response.setFileId(data.getTitle());
+
+        }catch (Exception ex){
+            throw new ApplicationException("file is not found", HttpStatus.OK);
+        }
+
+//        response.setFileId(data.getTitle());
         log.info("save single sheet excel file ");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping(path = "/excel/auto", consumes = "application/json")
+    @PostMapping(path = "/excel/auto",
+            consumes = "application/json",
+            headers = "Accept=application/json",
+            produces = "application/json; charset=UTF-8")
     @ApiOperation("Generate Multi-Sheet Excel Using Split field")
     public ResponseEntity<ExcelResponse> createMultiSheetExcel(@RequestBody @Validated MultiSheetExcelRequest request) throws ParseException, IOException {
         ExcelData data = excelGenerationService.createExcelData(request, request.getSplitBy());
@@ -90,7 +96,8 @@ public class ExcelGenerationController {
         excelRepository.saveFile(excelGenerationService.createExcelFile(file, data));
 
         ExcelResponse response = new ExcelResponse();
-        response.setFileId(file.getPath());
+//        response.setFileId(file.getPath());
+        response.setFileId(data.getTitle());
         log.info("save multi-sheet excel file" + file.getPath());
 
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -106,7 +113,9 @@ public class ExcelGenerationController {
         if (files.size() > 0) {
             for (ExcelFile f : files) {
                 ExcelResponse exresp = new ExcelResponse();
-                exresp.setFileId(f.getDownloadLink());
+                // here can give the file name/not link
+//                exresp.setFileId(f.getDownloadLink());
+                exresp.setFileId(f.getField());
                 response.add((exresp));
             }
         }
@@ -159,7 +168,10 @@ public class ExcelGenerationController {
     }
 
 
-    @PostMapping(path = "/excel/batch", consumes = "application/json")
+    @PostMapping(path = "/excel/batch",
+            consumes = "application/json",
+            headers = "Accept=application/json",
+            produces = "application/json; charset=UTF-8")
     @ApiOperation("Generate Multi Excel Using json array")
     public ResponseEntity<List<ExcelResponse>> createMultiSheetExcel(@RequestBody @Validated List<MultiSheetExcelRequest> request) throws ParseException, IOException {
 
@@ -172,7 +184,8 @@ public class ExcelGenerationController {
             File file = excelGenerationService.generateExcelReport(data);
             excelRepository.saveFile(excelGenerationService.createExcelFile(file, data));
             var resp = new ExcelResponse();
-            resp.setFileId(file.getPath());
+//            resp.setFileId(file.getPath());
+            resp.setFileId(data.getTitle());
             responses.add(resp);
         }
 
@@ -181,7 +194,7 @@ public class ExcelGenerationController {
     }
 
 
-    // it already done and just change the file name, you can change it
+    //
     @GetMapping("/excel/downloadZip")
     public void downloadMultiExcels(@RequestParam List<String> ids, HttpServletResponse response) throws IOException {
 
@@ -226,10 +239,11 @@ public class ExcelGenerationController {
 // Exception handling
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public void noMovieFound(ApplicationException ex) {
+    public void noFileFound(ApplicationException ex) {
 
     }
-// Validation
+
+// / Validation
 
 }
 

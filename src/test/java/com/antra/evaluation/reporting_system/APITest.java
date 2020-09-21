@@ -16,8 +16,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +42,9 @@ public class APITest {
 
     @Mock
     List<String> mockList;
+
+//    @Mock
+//    ExcelData data;
 
 
     @BeforeEach
@@ -66,11 +71,12 @@ public class APITest {
     }
 
     @Test
-    public void testExcelGeneration() throws FileNotFoundException, ParseException {
+    public void testExcelGeneration() throws IOException, ParseException {
+//        File mockFile = new File("temp.xlsx");
+//        System.out.println("Mock file path" + mockFile.getPath());
 
-        Mockito.when(excelGenerationService.createExcelData(new ExcelRequest(), "")).thenReturn(new ExcelData());
         given().accept("application/json").contentType(ContentType.JSON)
-                .body("{\"filename\": \"Test\",\"description\": \"test\",\"headers\": [{\"name\": \"Name\",\"type\": \"STRING\",\"width\": \"15\"},{\"name\": \"Age\",\"type\": \"NUMBER\",\"width\": \"15\"}],\"data\": [[\"A\", 10],[\"B\", 20]],\"submitter\": \"Ms.\"}")
+                .body("{\"filename\": \"mockTest\",\"description\": \"test\",\"headers\": [{\"name\": \"Name\",\"type\": \"STRING\",\"width\": \"15\"},{\"name\": \"Age\",\"type\": \"NUMBER\",\"width\": \"15\"}],\"data\": [[\"A\", 10],[\"B\", 20]],\"submitter\": \"Ms.\"}")
                 .post("/excel").peek().
                 then().assertThat()
                 .statusCode(200)
@@ -120,7 +126,7 @@ public class APITest {
     public void testDownloadZip() throws FileNotFoundException {
         // test1.xlsx and test2.xlsx are already in fold
         Mockito.when(excelService.getFileNames(anyList())).thenReturn(asList("test1.xlsx","test2.xlsx"));
-            given().accept("application/json")
+        given().accept("application/json")
                 .get("/excel/downloadZip?ids=test1,test2").peek().
                 then().assertThat()
                 .statusCode(200)
