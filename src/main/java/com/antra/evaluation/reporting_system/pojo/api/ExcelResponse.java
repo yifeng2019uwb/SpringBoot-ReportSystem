@@ -10,5 +10,6 @@ import lombok.Setter;
 public class ExcelResponse {
 
     private String fileId;
+    private String messgae;
 
 }

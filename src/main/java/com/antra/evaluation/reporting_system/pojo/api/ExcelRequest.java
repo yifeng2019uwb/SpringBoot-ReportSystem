@@ -1,21 +1,36 @@
 package com.antra.evaluation.reporting_system.pojo.api;
 
+import com.antra.evaluation.reporting_system.pojo.report.ExcelDataSheet;
+import org.springframework.lang.NonNull;
 
 import java.util.List;
 
-import com.antra.evaluation.reporting_system.pojo.report.ExcelDataHeader;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
 public class ExcelRequest {
 
-    private String filename;
     private String description;
-    private List<ExcelDataHeader> headers;
-    private List<List<String>> data;
-    private String submitter;
+    private String title;
+    private List<ExcelDataSheet> sheets;
 
+
+    public ExcelRequest(@NonNull  String title, @NonNull String description, @NonNull List<ExcelDataSheet> sheets) {
+        this.title = title;
+        this.description = description;
+        this.sheets = sheets;
+    }
+    public ExcelRequest() {}
+
+    @NonNull
+    public String getDescription() {
+        return description;
+    }
+
+    @NonNull
+    public String getTitle() {
+        return title;
+    }
+
+    @NonNull
+    public List<ExcelDataSheet> getSheets() {
+        return sheets;
+    }
 }

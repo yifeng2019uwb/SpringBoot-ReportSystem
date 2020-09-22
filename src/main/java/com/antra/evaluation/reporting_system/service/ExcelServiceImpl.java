@@ -1,17 +1,22 @@
 package com.antra.evaluation.reporting_system.service;
 
+import com.antra.evaluation.reporting_system.Exception.ApplicationException;
+import com.antra.evaluation.reporting_system.Exception.BadRequestException;
+import com.antra.evaluation.reporting_system.pojo.report.ExcelData;
+import com.antra.evaluation.reporting_system.pojo.report.ExcelDataHeader;
+import com.antra.evaluation.reporting_system.pojo.report.ExcelDataSheet;
 import com.antra.evaluation.reporting_system.repo.ExcelRepository;
 import com.antra.evaluation.reporting_system.pojo.report.ExcelFile;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @Service
 public class ExcelServiceImpl implements ExcelService {
@@ -19,37 +24,110 @@ public class ExcelServiceImpl implements ExcelService {
     @Autowired
     ExcelRepository excelRepository;
 
-    @Override
-    public synchronized InputStream getExcelBodyById(String id) throws FileNotFoundException {
+    @Autowired
+    ExcelGenerationService excelGenerationService;
 
-        Optional<ExcelFile> fileInfo = excelRepository.getFileById(id);
-        if (fileInfo.isPresent()) {
-            File file = new File(fileInfo.get().getDownloadLink());
-            try {
-                return new FileInputStream(file);
-            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-                throw new FileNotFoundException();
+    @Override
+    public File generateExcelFile(ExcelData data) throws IOException {
+        return excelGenerationService.generateExcelReport(data);
+    }
+
+    private int validateSplitBy(List<ExcelDataHeader> headers, String splitBy) {
+
+        if (headers == null) return -1;
+        int splitIndex = -1;
+        for (int i = 0; i < headers.size(); i++) {
+
+            if (headers.get(i).getName().equals(splitBy)) {
+                splitIndex = i;
+                break;
             }
         }
-
-        return null;
+        return splitIndex;
     }
 
     @Override
-    public List<String> getFileNames(List<String> ids) throws FileNotFoundException {
+    public File generateAutoFile(ExcelData data, @NonNull String splitBy) throws IOException, BadRequestException {
 
-        List<String> files = new ArrayList<>();
-        for (String id : ids) {
-            Optional<ExcelFile> fileInfo = excelRepository.getFileById(id);
-            if (fileInfo.isPresent()) {
-                files.add(fileInfo.get().getDownloadLink());
+
+        List<ExcelDataSheet> splitedSheet = new ArrayList<>();
+        for (ExcelDataSheet sheet : data.getSheets()) {
+            List<ExcelDataHeader> headers = sheet.getHeaders();
+            int splitIndex = validateSplitBy(headers, splitBy);
+            if (splitIndex == -1) {
+//                log.info("Bad split keyword");
+                throw new BadRequestException("Bad split key word");
             } else {
-                throw new FileNotFoundException();
+                Map<String, Integer> map = new HashMap<>();
+                for (List<Object> row : sheet.getDataRows()) {
+                    String sheetKey = row.get(splitIndex).toString();
+
+                    if (!map.containsKey(sheetKey)) {
+                        ExcelDataSheet newSheet = new ExcelDataSheet();
+                        newSheet.setHeaders(headers);
+                        newSheet.setTitle(sheet.getTitle() + "-" + splitBy + "-" + sheetKey);
+                        newSheet.setDataRows(new ArrayList<>());
+
+                        map.put(sheetKey, splitedSheet.size());
+                        splitedSheet.add(newSheet);
+                    }
+                    splitedSheet.get(map.get(sheetKey)).getDataRows().add(row);
+
+                }
             }
         }
 
-        return files;
+        data.setSheets(splitedSheet);
+        return generateExcelFile(data);
+
+    }
+
+
+    @Override
+    public InputStream getExcelBodyById(String id) throws ApplicationException {
+
+        return excelGenerationService.getExcelBodyById(id);
+    }
+
+
+    @Override
+    public List<String> getAllFileList() {
+        return excelRepository.getListofFiles();
+    }
+
+    @Override
+    public String deleteFile(String id) throws ApplicationException {
+
+        ExcelFile fileInfo = excelRepository.getFileInfo(id);
+//        if (fileInfo == null ) {
+//            throw new ApplicationException("File not found", HttpStatus.NOT_FOUND);
+//        }
+
+        String deleted = excelGenerationService.deleteFile(fileInfo.getDownloadLink());
+        excelRepository.removeRecord(fileInfo.getFieldId());
+
+        return deleted;
+    }
+
+
+    @Override
+    public ExcelFile getFileInfo(String id) {
+        return excelRepository.getFileInfo(id);
+    }
+
+//    @Override
+//    public ExcelFile createExcelFile(File file, ExcelData data) {
+//        ExcelFile excelFile = new ExcelFile(file.getName(), data.getGeneratedTime(),file.getTotalSpace(),file.getAbsolutePath());
+//
+//        return excelFile;
+//
+//    }
+
+    public ExcelFile saveFileRecord(File file, ExcelData data) {
+        ExcelFile excelFile = new ExcelFile(file.getName(), data.getGeneratedTime(), file.getTotalSpace(), file.getAbsolutePath());
+        excelRepository.saveFile(excelFile);
+        return excelFile;
+
     }
 
 }

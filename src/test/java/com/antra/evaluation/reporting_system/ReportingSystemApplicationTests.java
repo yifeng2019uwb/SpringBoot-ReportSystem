@@ -1,5 +1,6 @@
 package com.antra.evaluation.reporting_system;
 
+import com.antra.evaluation.reporting_system.Exception.BadRequestException;
 import com.antra.evaluation.reporting_system.pojo.report.*;
 import com.antra.evaluation.reporting_system.repo.ExcelRepository;
 import com.antra.evaluation.reporting_system.service.ExcelGenerationService;
@@ -13,11 +14,14 @@ import org.springframework.test.web.client.MockRestServiceServer;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -35,7 +39,7 @@ class ReportingSystemApplicationTests {
     @Autowired
     ExcelService excelService;
 
-    private  ExcelData data;
+    private ExcelData data;
 
     private MockRestServiceServer mockServer;
 
@@ -84,83 +88,41 @@ class ReportingSystemApplicationTests {
         sheet2.setHeaders(headersS1);
         sheets.add(sheet2);
 
-        List<ExcelFile> allFiles = excelRepository.getFiles();
-        System.out.println( allFiles.size() + " files in repository now");
-        if (allFiles.size() > 0 ) {
-            for (ExcelFile f : allFiles) {
-                System.out.println(f.getField());
-            }
-        }
     }
 
     @Test
-    @Order(1)
     public void testExcelGegeration() {
         File file = null;
         try {
             file = reportService.generateExcelReport(data);
-            // for get test
-            excelRepository.saveFile(reportService.createExcelFile(file, data));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assertTrue(file != null);
+        assertNotNull(file);
     }
 
     @Test
-    @Order(2)
-    public void testGetFile() throws IOException {
-
-        assertTrue(excelRepository.findFile("Test book") );
-    }
-
-    @Test
-    @Order(3)
-    public void testDeleteFile() throws IOException {
-        try {
-            assertTrue(excelRepository.deleteFile("Test book"));
-        }
-        finally {
-            excelRepository.removeRecord("Test book");
-        }
-
-    }
-
-    @Test
-//    @Disabled
-    @Order(4)
-    public void testSaveBatchofFiles() throws IOException {
-        // This is not necessary to test ?
+    public void testExcelAutoGeneration() throws ParseException {
         File file = null;
         try {
-            file = reportService.generateExcelReport(data);
-            // for get test
-            data.setTitle(("Test Book 10"));
-            excelRepository.saveFile(reportService.createExcelFile(file, data));
-
-            data.setTitle(("Test Book 20"));
-            file = reportService.generateExcelReport(data);
-            excelRepository.saveFile(reportService.createExcelFile(file, data));
-
-            data.setTitle(("Test Book 30"));
-            file = reportService.generateExcelReport(data);
-            excelRepository.saveFile(reportService.createExcelFile(file, data));
-
+            file = excelService.generateAutoFile(data, "Age");
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-//        System.out.println(excelRepository.getFiles().size());
-        assertTrue(excelRepository.getFiles().size() == 3 );
-
+        assertNotNull(file);
     }
 
     @Test
-    @Disabled
-    @Order(5)
-    public void testDownloadZipFile() throws IOException {
+//  (expected = NotSplitException.class)
+    public void testExcelAutoGenerationExpectedException()  {
+        Assertions.assertThrows(BadRequestException.class, () -> {
+            excelService.generateAutoFile(data,"name");
+        });
 
     }
 
 
-}
+ }
+
+
+

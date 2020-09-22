@@ -25,23 +25,8 @@ public class ExcelRepositoryImpl implements ExcelRepository {
             return null;
         }
 
-        excelData.put(file.getField(), file);
+        excelData.put(file.getFieldId(), file);
         return file;
-    }
-
-    @Override
-    public boolean deleteFile(String id) {
-        ExcelFile efile = excelData.get(id);
-        if (efile == null) {
-            return false;
-        }
-        File file = new File(efile.getDownloadLink());
-
-//        String path = efile.getDownloadLink();
-//        excelData.remove(path.substring(0, path.length() - 5));
-
-        return file.delete();
-
     }
 
     @Override
@@ -59,8 +44,25 @@ public class ExcelRepositoryImpl implements ExcelRepository {
     }
 
     @Override
-    public void removeRecord(String fileName) {
-        excelData.remove(fileName);
+    public ExcelFile removeRecord(String fieldId) {
+            return excelData.remove(fieldId);
+    }
+
+    @Override
+    public List<String> getListofFiles(){
+        List<String> files = new ArrayList<>();
+        for(String fname : excelData.keySet()) {
+            files.add(fname);
+        }
+        return files;
+    }
+
+    @Override
+    public ExcelFile getFileInfo(String id) {
+        if (excelData.containsKey(id)) {
+            return excelData.get(id);
+        }
+        return null;
     }
 
 

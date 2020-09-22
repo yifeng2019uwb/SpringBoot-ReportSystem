@@ -11,12 +11,14 @@ public interface ExcelRepository {
 
     ExcelFile saveFile(ExcelFile file);
 
-    boolean deleteFile(String id);
+    List<String> getListofFiles();
 
     List<ExcelFile> getFiles();
 
+    ExcelFile getFileInfo(String id);
+
     boolean findFile(String fileName);
 
-    void removeRecord(String fileName);
+    ExcelFile removeRecord(String fieldId);
 
 }
