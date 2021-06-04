@@ -1,4 +1,4 @@
-package com.yifeng.evaluation.reporting_system.config;
+package com.yifeng.reporting_system.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
