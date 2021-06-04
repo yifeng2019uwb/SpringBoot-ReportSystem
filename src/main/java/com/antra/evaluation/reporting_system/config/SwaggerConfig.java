@@ -1,4 +1,4 @@
-package com.antra.evaluation.reporting_system.config;
+package com.yifeng.evaluation.reporting_system.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +19,7 @@ public class SwaggerConfig {
     public Docket productApi() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.antra.evaluation.reporting_system"))
+                .apis(RequestHandlerSelectors.basePackage("com.yifeng.reporting_system"))
                 .paths(PathSelectors.any())
                 .build().apiInfo(metaInfo());
 
