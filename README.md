@@ -9,10 +9,10 @@ In order to compile and run this assessment correctly, below environments are re
 
 
  ## Install
- ###- Run the below command to compile and setup:
+ ### Run the below command to compile and setup:
  * _`mvn install`_
   * or _`mvn install -Dmaven.test.skip=true`_ if the test fails during the building.
- ###- Run the below command to run the tests:
+ ### Run the below command to run the tests:
  * _`mvn test`_
 
 
@@ -30,7 +30,7 @@ In order to compile and run this assessment correctly, below environments are re
 
 ## See [ExcelReportSystem.pdf](ExcelReportSystem.pdf) for more details.
 
- ###Valid incoming data
+ ### Valid incoming data
  * For single sheet api - _fields may vary depending on your design._
  ```json
  {"headers":["Name","Age"], "data":[["Teresa","5"],["Daniel","1"]]}
@@ -41,14 +41,14 @@ In order to compile and run this assessment correctly, below environments are re
 ```
  * See _ExcelGenerationController_ for Detailed explaination of each API.
 
-##Data storage
+## Data storage
  * Using ConcurrentHashMap to simulate data storage in  local storage(current path).
 
-##Documents
+## Documents
 * [ExcelReportSystem.pdf](ExcelReportSystem.pdf)
 * http://localhost:8080/swagger-ui.html
 
-##Test
+## Test
 Use [mathData.json](mathData.json) and [mathData-withSplitBy.json](mathData-withSplitBy.json) as the payload when testing with Postman or Junit.
 [mathData.xlsx](mathData.xlsx) and [mathData-withSplitBy.xlsx](mathData-withSplitBy.xlsx) are two example excel files for the test data.
 
